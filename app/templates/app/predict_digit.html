@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Digit Prediction</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            background-image: url("{% static 'bg.jpg' %}");
+            background-repeat: no-repeat;
+            background-size: 80%; /* Adjusts the background image size */
+            background-position: center; /* Centers the background image */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+           }
+        
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            
+            text-align: center;
+            width: 300px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color:black;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 30px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: blue;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #prediction-result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Digit Prediction</h1>
+        <p>Upload an image of a handwritten digit (0-9) to predict the digit.</p>
+        <form id="prediction-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="image">Upload Image:</label>
+            <input type="file" id="image" name="image" accept="image/*" required><br><br>
+            <button type="submit">Predict Digit</button>
+        </form>
+        <div id="prediction-result"></div>
+    </div>
+    <script>
+        document.getElementById('prediction-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const form = document.getElementById('prediction-form');
+            const formData = new FormData(form);
+
+            fetch('/predict_digit/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('prediction-result');
+                if (data.error) {
+                    resultDiv.innerHTML = `Error: ${data.error}`;
+                    resultDiv.style.color = 'red';
+                } else {
+                    resultDiv.innerHTML = `Predicted digit: ${data.predicted_digit}`;
+                    resultDiv.style.color = 'green';
+                }
+            })
+            .catch(error => {
+                console.error('Error during prediction:', error);
+                document.getElementById('prediction-result').innerHTML = 'An error occurred.';
+                document.getElementById('prediction-result').style.color = 'red';
+            });
+        });
+    </script>
+</body>
+</html>
